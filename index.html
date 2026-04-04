@@ -854,8 +854,9 @@
           // Glow do bg
           document.querySelector('.bg-glow').style.background =
             `radial-gradient(ellipse, ${cfg.cor_primaria}20 0%, transparent 70%)`;
-        }
+          
         if (cfg.cor_secundaria) {
+          document.documentElement.style.setProperty('--secondary', cfg.cor_secundaria);
           document.documentElement.style.setProperty('--gold', cfg.cor_secundaria);
           document.documentElement.style.setProperty('--gold2', cfg.cor_secundaria + 'cc');
         }
