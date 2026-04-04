@@ -198,30 +198,71 @@
       color: var(--muted);
     }
 
-    /* BARRA DE PROGRESSO */
-    .progress-section {
-      margin-top: 20px;
-    }
-    .progress-label {
+    /* ── TIPO ENTREGA ── */
+    .entrega-opcoes {
       display: flex;
-      justify-content: space-between;
-      font-size: 11px;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .entrega-btn {
+      flex: 1;
+      padding: 14px 10px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      background: transparent;
       color: var(--muted);
-      margin-bottom: 8px;
-      font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
     }
-    .progress-bar {
-      height: 6px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 999px;
-      overflow: hidden;
+
+    .entrega-btn .entrega-icon { font-size: 22px; }
+
+    .entrega-btn.selected {
+      border-color: var(--primary);
+      background: rgba(249,115,115,0.08);
+      color: var(--text);
     }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--gold2), var(--gold));
-      border-radius: 999px;
-      transition: width 1s cubic-bezier(0.4,0,0.2,1);
+
+    .campo-endereco {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
     }
+
+    .campo-endereco.visible { display: flex; }
+
+    .campo-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    .campo-input {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border2);
+      background: var(--surface2);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .campo-input:focus { border-color: var(--primary); }
+    .campo-input::placeholder { color: var(--muted); }
 
     /* ── TABS ── */
     .tabs {
@@ -668,15 +709,7 @@
       </div>
       <div class="pontos-name" id="pontos-name"></div>
       <div class="pontos-resgatados" id="pontos-resgatados"></div>
-      <div class="progress-section" id="progress-section" style="display:none;">
-        <div class="progress-label">
-          <span>Progresso para o próximo prêmio</span>
-          <span id="progress-pct">0%</span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress-fill" id="progress-fill" style="width:0%"></div>
-        </div>
-      </div>
+
     </div>
 
     <!-- TABS -->
@@ -703,8 +736,9 @@
   <div class="modal-backdrop" id="modal-resgate" onclick="fecharModal(event)">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
-      <div class="modal-title">Confirmar resgate</div>
-      <div class="modal-sub">Tem certeza que deseja resgatar este prêmio? Os pontos serão debitados imediatamente.</div>
+      <div class="modal-title">Resgatar prêmio</div>
+      <div class="modal-sub">Como você quer receber seu prêmio?</div>
+
       <div class="modal-premio-box">
         <div class="modal-premio-icon" id="modal-icon">🎁</div>
         <div>
@@ -712,6 +746,26 @@
           <div class="modal-premio-pts" id="modal-pts">— pontos</div>
         </div>
       </div>
+
+      <!-- TIPO DE ENTREGA -->
+      <div class="entrega-opcoes">
+        <button class="entrega-btn selected" id="btn-retirada" onclick="selecionarEntrega('retirada')">
+          <span class="entrega-icon">🏪</span>
+          Retirar no local
+        </button>
+        <button class="entrega-btn" id="btn-delivery" onclick="selecionarEntrega('delivery')">
+          <span class="entrega-icon">🛵</span>
+          Delivery
+        </button>
+      </div>
+
+      <!-- CAMPO ENDEREÇO (só aparece no delivery) -->
+      <div class="campo-endereco" id="campo-endereco">
+        <div class="campo-label">Endereço de entrega</div>
+        <input class="campo-input" id="input-endereco" type="text"
+          placeholder="Rua, número, bairro, complemento..." />
+      </div>
+
       <div class="modal-actions">
         <button class="btn-cancelar" onclick="closeModal()">Cancelar</button>
         <button class="btn-confirmar" id="btn-confirmar" onclick="confirmarResgate()">Resgatar agora</button>
@@ -823,20 +877,6 @@
           `${cliente.pontos_resgatados.toLocaleString('pt-BR')} pontos já resgatados`;
       }
 
-      // Barra de progresso para o próximo prêmio
-      const proximoPremio = premios
-        .filter(p => p.pontos_necessarios > (cliente.pontos || 0))
-        .sort((a, b) => a.pontos_necessarios - b.pontos_necessarios)[0];
-
-      if (proximoPremio) {
-        const pct = Math.min(100, Math.round((cliente.pontos / proximoPremio.pontos_necessarios) * 100));
-        document.getElementById('progress-section').style.display = 'block';
-        document.getElementById('progress-pct').textContent = pct + '%';
-        setTimeout(() => {
-          document.getElementById('progress-fill').style.width = pct + '%';
-        }, 300);
-      }
-
       // Prêmios
       renderPremios(premios, cliente.pontos || 0);
 
@@ -930,18 +970,34 @@
     // ══════════════════════════════
     // MODAL RESGATE
     // ══════════════════════════════
+    let tipoEntregaSelecionado = 'retirada';
+
+    function selecionarEntrega(tipo) {
+      tipoEntregaSelecionado = tipo;
+      document.getElementById('btn-retirada').classList.toggle('selected', tipo === 'retirada');
+      document.getElementById('btn-delivery').classList.toggle('selected', tipo === 'delivery');
+      document.getElementById('campo-endereco').classList.toggle('visible', tipo === 'delivery');
+      if (tipo === 'retirada') {
+        document.getElementById('input-endereco').value = '';
+      }
+    }
+
     function abrirModal(premio) {
       premioSelecionado = premio;
+      tipoEntregaSelecionado = 'retirada';
       document.getElementById('modal-nome').textContent = premio.nome;
       document.getElementById('modal-pts').textContent  = `${premio.pontos_necessarios.toLocaleString('pt-BR')} pontos`;
       document.getElementById('btn-confirmar').disabled = false;
       document.getElementById('btn-confirmar').textContent = 'Resgatar agora';
+      // Reset seleção
+      selecionarEntrega('retirada');
       document.getElementById('modal-resgate').classList.add('open');
     }
 
     function closeModal() {
       document.getElementById('modal-resgate').classList.remove('open');
       premioSelecionado = null;
+      document.getElementById('input-endereco').value = '';
     }
 
     function fecharModal(e) {
@@ -951,6 +1007,15 @@
     async function confirmarResgate() {
       if (!premioSelecionado || !tokenAtual) return;
 
+      const isDelivery = tipoEntregaSelecionado === 'delivery';
+      const endereco = document.getElementById('input-endereco').value.trim();
+
+      if (isDelivery && !endereco) {
+        document.getElementById('input-endereco').focus();
+        document.getElementById('input-endereco').style.borderColor = 'var(--primary)';
+        return;
+      }
+
       const btn = document.getElementById('btn-confirmar');
       btn.disabled = true;
       btn.textContent = 'Processando...';
@@ -959,16 +1024,20 @@
         const resp = await fetch(`${API_BASE}/api/v1/fidelidade/resgatar`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: tokenAtual, premio_id: premioSelecionado.id })
+          body: JSON.stringify({
+            token: tokenAtual,
+            premio_id: premioSelecionado.id,
+            service_type: isDelivery ? 'delivery' : 'local',
+            address: isDelivery ? endereco : null
+          })
         });
 
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.error || 'Erro ao resgatar');
 
         closeModal();
-        showToast('✓ Resgate realizado! Aguarde a confirmação.');
+        showToast(isDelivery ? '✓ Resgate solicitado! Entrega a caminho.' : '✓ Resgate solicitado! Retire no balcão.');
 
-        // Recarrega dados
         await reloadCliente();
 
       } catch (e) {
