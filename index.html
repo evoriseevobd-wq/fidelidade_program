@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fidelidade</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --primary:   #f97373;
+      --secondary: #b91c1c;
+      --bg:        #0c0a09;
+      --surface:   #1a1512;
+      --surface2:  #231e1a;
+      --border:    rgba(255,255,255,0.08);
+      --border2:   rgba(255,255,255,0.14);
+      --text:      #fdf8f4;
+      --muted:     #a09080;
+      --gold:      #f5c842;
+      --gold2:     #d4a017;
+      --radius:    20px;
+      --radius-sm: 12px;
+      --shadow:    0 4px 24px rgba(0,0,0,0.4);
+      --shadow-lg: 0 12px 48px rgba(0,0,0,0.6);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 60px;
+      overflow-x: hidden;
+    }
+
+    /* ── GRAIN OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.6;
+    }
+
+    /* ── GLOW BG ── */
+    .bg-glow {
+      position: fixed;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(249,115,115,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── STATES ── */
+    .state-screen {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 16px; z-index: 10;
+      background: var(--bg);
+      text-align: center;
+      padding: 40px;
+    }
+    .state-screen.hidden { display: none; }
+
+    .spinner {
+      width: 36px; height: 36px;
+      border: 2px solid rgba(249,115,115,0.2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .state-icon { font-size: 48px; }
+    .state-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px; font-weight: 700;
+      color: var(--text);
+    }
+    .state-msg { font-size: 14px; color: var(--muted); line-height: 1.7; max-width: 260px; }
+
+    /* ── MAIN APP ── */
+    #app { position: relative; z-index: 1; }
+    #app.hidden { display: none; }
+
+    /* ── HEADER ── */
+    .header {
+      padding: 40px 24px 32px;
+      text-align: center;
+      position: relative;
+    }
+
+    .logo-wrap {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin: 0 auto 16px;
+      border: 2px solid var(--border2);
+      display: none;
+      background: var(--surface);
+    }
+    .logo-wrap.visible { display: block; }
+    .logo-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .restaurant-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .restaurant-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+      font-weight: 400;
+    }
+
+    /* ── PONTOS CARD ── */
+    .pontos-card {
+      margin: 0 20px 32px;
+      background: linear-gradient(135deg, var(--surface2) 0%, #2a1f1a 100%);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .pontos-card::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 180px; height: 180px;
+      background: radial-gradient(circle, rgba(245,200,66,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .pontos-card::after {
+      content: '⭐';
+      position: absolute;
+      right: 24px; top: 24px;
+      font-size: 40px;
+      opacity: 0.25;
+    }
+
+    .pontos-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .pontos-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 64px;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .pontos-unit {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--gold2);
+      margin-left: 4px;
+    }
+
+    .pontos-name {
+      margin-top: 16px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .pontos-resgatados {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* BARRA DE PROGRESSO */
+    .progress-section {
+      margin-top: 20px;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .progress-bar {
+      height: 6px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold2), var(--gold));
+      border-radius: 999px;
+      transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 0 20px;
+      margin-bottom: 24px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--surface2);
+      border-color: var(--primary);
+      color: var(--text);
+    }
+
+    .tab-btn:hover:not(.active) {
+      border-color: var(--border2);
+      color: var(--text);
+    }
+
+    /* ── SECTION ── */
+    .section { padding: 0 20px; }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    /* ── PRÊMIOS ── */
+    .premios-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .premio-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .premio-card.disponivel {
+      border-color: rgba(245,200,66,0.3);
+      background: linear-gradient(135deg, var(--surface) 0%, rgba(245,200,66,0.04) 100%);
+    }
+
+    .premio-card.disponivel::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: linear-gradient(to bottom, var(--gold2), var(--gold));
+      border-radius: 999px;
+    }
+
+    .premio-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .premio-card.disponivel .premio-icon {
+      background: rgba(245,200,66,0.1);
+      border-color: rgba(245,200,66,0.3);
+    }
+
+    .premio-info { flex: 1; min-width: 0; }
+
+    .premio-nome {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .premio-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .premio-pts {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .premio-pts.falta {
+      color: var(--muted);
+    }
+
+    .resgatar-btn {
+      flex-shrink: 0;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: linear-gradient(135deg, var(--gold2), var(--gold));
+      color: #1a1100;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(245,200,66,0.3);
+    }
+
+    .resgatar-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(245,200,66,0.4);
+    }
+
+    .bloqueado-badge {
+      flex-shrink: 0;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: transparent;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* ── HISTÓRICO ── */
+    .historico-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .historico-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .historico-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: rgba(249,115,115,0.1);
+      border: 1px solid rgba(249,115,115,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .historico-info { flex: 1; min-width: 0; }
+
+    .historico-nome {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .historico-data {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .historico-status {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .historico-status.pendente {
+      background: rgba(249,115,115,0.12);
+      color: var(--primary);
+      border: 1px solid rgba(249,115,115,0.25);
+    }
+
+    .historico-status.finalizado {
+      background: rgba(34,197,94,0.12);
+      color: #4ade80;
+      border: 1px solid rgba(34,197,94,0.25);
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--muted);
+    }
+    .empty .icon { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
+    .empty p { font-size: 13px; line-height: 1.6; }
+
+    /* ── MODAL DE CONFIRMAÇÃO ── */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(6px);
+      z-index: 200;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .modal-backdrop.open {
+      opacity: 1; pointer-events: auto;
+    }
+
+    .modal-sheet {
+      background: var(--surface);
+      border-radius: 24px 24px 0 0;
+      border: 1px solid var(--border2);
+      border-bottom: none;
+      padding: 8px 24px 48px;
+      width: 100%;
+      max-width: 600px;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 0 -12px 48px rgba(0,0,0,0.5);
+    }
+    .modal-backdrop.open .modal-sheet {
+      transform: translateY(0);
+    }
+
+    .modal-handle {
+      width: 36px; height: 3px;
+      background: var(--border2);
+      border-radius: 999px;
+      margin: 12px auto 24px;
+    }
+
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .modal-sub {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .modal-premio-box {
+      background: var(--surface2);
+      border: 1px solid rgba(245,200,66,0.2);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .modal-premio-icon {
+      font-size: 32px;
+    }
+
+    .modal-premio-nome {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .modal-premio-pts {
+      font-size: 13px;
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-cancelar {
+      flex: 1;
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border2);
+      background: transparent;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-cancelar:hover { color: var(--text); border-color: var(--border2); }
+
+    .btn-confirmar {
+      flex: 2;
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: linear-gradient(135deg, var(--gold2), var(--gold));
+      color: #1a1100;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(245,200,66,0.3);
+    }
+    .btn-confirmar:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,200,66,0.4); }
+    .btn-confirmar:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ── SUCCESS TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      z-index: 300;
+      background: var(--surface2);
+      border: 1px solid rgba(34,197,94,0.3);
+      color: #4ade80;
+      border-radius: 999px;
+      padding: 13px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-up {
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .fade-up-1 { animation-delay: 0.05s; }
+    .fade-up-2 { animation-delay: 0.1s; }
+    .fade-up-3 { animation-delay: 0.15s; }
+    .fade-up-4 { animation-delay: 0.2s; }
+
+    @media (max-width: 480px) {
+      .pontos-value { font-size: 52px; }
+      .restaurant-name { font-size: 24px; }
+      .header { padding: 32px 20px 24px; }
+      .pontos-card { margin: 0 16px 28px; }
+      .section { padding: 0 16px; }
+      .tabs { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-glow"></div>
+
+  <!-- LOADING -->
+  <div class="state-screen" id="loading-screen">
+    <div class="spinner"></div>
+    <div class="state-msg">Carregando seus pontos...</div>
+  </div>
+
+  <!-- ERRO -->
+  <div class="state-screen hidden" id="error-screen">
+    <div class="state-icon">⚠️</div>
+    <div class="state-title">Ops!</div>
+    <div class="state-msg" id="error-msg">Link inválido ou expirado.</div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+
+    <div class="header fade-up fade-up-1">
+      <div class="logo-wrap" id="logo-wrap">
+        <img id="logo-img" src="" alt="Logo" />
+      </div>
+      <div class="restaurant-name" id="restaurant-name">Fidelidade</div>
+      <div class="restaurant-sub" id="restaurant-sub"></div>
+    </div>
+
+    <!-- PONTOS -->
+    <div class="pontos-card fade-up fade-up-2" id="pontos-card">
+      <div class="pontos-label">Seus pontos</div>
+      <div>
+        <span class="pontos-value" id="pontos-value">0</span>
+        <span class="pontos-unit">pts</span>
+      </div>
+      <div class="pontos-name" id="pontos-name"></div>
+      <div class="pontos-resgatados" id="pontos-resgatados"></div>
+      <div class="progress-section" id="progress-section" style="display:none;">
+        <div class="progress-label">
+          <span>Progresso para o próximo prêmio</span>
+          <span id="progress-pct">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs fade-up fade-up-3">
+      <button class="tab-btn active" id="tab-premios" onclick="switchTab('premios')">🎁 Prêmios</button>
+      <button class="tab-btn" id="tab-historico" onclick="switchTab('historico')">📋 Histórico</button>
+    </div>
+
+    <!-- PRÊMIOS -->
+    <div class="section fade-up fade-up-4" id="painel-premios">
+      <div class="section-title">Prêmios disponíveis</div>
+      <div class="premios-list" id="premios-list"></div>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <div class="section hidden" id="painel-historico">
+      <div class="section-title">Resgates realizados</div>
+      <div class="historico-list" id="historico-list"></div>
+    </div>
+
+  </div>
+
+  <!-- MODAL RESGATE -->
+  <div class="modal-backdrop" id="modal-resgate" onclick="fecharModal(event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Confirmar resgate</div>
+      <div class="modal-sub">Tem certeza que deseja resgatar este prêmio? Os pontos serão debitados imediatamente.</div>
+      <div class="modal-premio-box">
+        <div class="modal-premio-icon" id="modal-icon">🎁</div>
+        <div>
+          <div class="modal-premio-nome" id="modal-nome">—</div>
+          <div class="modal-premio-pts" id="modal-pts">— pontos</div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancelar" onclick="closeModal()">Cancelar</button>
+        <button class="btn-confirmar" id="btn-confirmar" onclick="confirmarResgate()">Resgatar agora</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">✓ Resgate realizado!</div>
+
+  <script>
+    const API_BASE = 'https://kds-backend.dahead.easypanel.host';
+
+    let clienteData  = null;
+    let premiosData  = [];
+    let premioSelecionado = null;
+    let tokenAtual   = null;
+
+    // ══════════════════════════════
+    // INIT
+    // ══════════════════════════════
+    async function init() {
+      const params = new URLSearchParams(window.location.search);
+      const token  = params.get('token');
+
+      if (!token) {
+        showError('Link inválido. Acesse pelo link enviado pelo restaurante.');
+        return;
+      }
+
+      tokenAtual = token;
+
+      try {
+        const resp = await fetch(`${API_BASE}/api/v1/fidelidade/cliente/${token}`);
+        if (!resp.ok) throw new Error('not_found');
+        const data = await resp.json();
+
+        clienteData = data.cliente;
+        premiosData = data.premios || [];
+
+        // Busca config visual do restaurante
+        await loadConfig(clienteData.restaurant_id || extractRestaurantId(data));
+
+        renderApp(data);
+        showApp();
+      } catch (e) {
+        if (e.message === 'not_found') {
+          showError('Cliente não encontrado. Verifique o link.');
+        } else {
+          showError('Erro ao carregar dados. Tente novamente.');
+        }
+      }
+    }
+
+    function extractRestaurantId(data) {
+      // Tenta pegar o restaurant_id dos prêmios caso não venha no cliente
+      return data.premios?.[0]?.restaurant_id || null;
+    }
+
+    async function loadConfig(restaurantId) {
+      if (!restaurantId) return;
+      try {
+        const resp = await fetch(`${API_BASE}/api/v1/restaurante/${restaurantId}/config`);
+        if (!resp.ok) return;
+        const cfg = await resp.json();
+
+        // Nome e subtítulo
+        if (cfg.nome_exibicao) {
+          document.getElementById('restaurant-name').textContent = cfg.nome_exibicao;
+          document.title = cfg.nome_exibicao + ' — Fidelidade';
+        }
+        if (cfg.subtitulo) {
+          document.getElementById('restaurant-sub').textContent = cfg.subtitulo;
+        }
+
+        // Logo
+        if (cfg.logo_url) {
+          document.getElementById('logo-img').src = cfg.logo_url;
+          document.getElementById('logo-wrap').classList.add('visible');
+        }
+
+        // Cores
+        if (cfg.cor_primaria) {
+          document.documentElement.style.setProperty('--primary', cfg.cor_primaria);
+          document.documentElement.style.setProperty('--secondary', cfg.cor_primaria);
+          // Glow do bg
+          document.querySelector('.bg-glow').style.background =
+            `radial-gradient(ellipse, ${cfg.cor_primaria}20 0%, transparent 70%)`;
+        }
+        if (cfg.cor_secundaria) {
+          document.documentElement.style.setProperty('--gold', cfg.cor_secundaria);
+          document.documentElement.style.setProperty('--gold2', cfg.cor_secundaria + 'cc');
+        }
+
+      } catch { /* silencioso */ }
+    }
+
+    // ══════════════════════════════
+    // RENDER
+    // ══════════════════════════════
+    function renderApp(data) {
+      const { cliente, premios, resgates } = data;
+
+      // Pontos
+      document.getElementById('pontos-value').textContent = (cliente.pontos || 0).toLocaleString('pt-BR');
+      document.getElementById('pontos-name').textContent  = cliente.nome || '';
+      if (cliente.pontos_resgatados > 0) {
+        document.getElementById('pontos-resgatados').textContent =
+          `${cliente.pontos_resgatados.toLocaleString('pt-BR')} pontos já resgatados`;
+      }
+
+      // Barra de progresso para o próximo prêmio
+      const proximoPremio = premios
+        .filter(p => p.pontos_necessarios > (cliente.pontos || 0))
+        .sort((a, b) => a.pontos_necessarios - b.pontos_necessarios)[0];
+
+      if (proximoPremio) {
+        const pct = Math.min(100, Math.round((cliente.pontos / proximoPremio.pontos_necessarios) * 100));
+        document.getElementById('progress-section').style.display = 'block';
+        document.getElementById('progress-pct').textContent = pct + '%';
+        setTimeout(() => {
+          document.getElementById('progress-fill').style.width = pct + '%';
+        }, 300);
+      }
+
+      // Prêmios
+      renderPremios(premios, cliente.pontos || 0);
+
+      // Histórico
+      renderHistorico(resgates || []);
+    }
+
+    function renderPremios(premios, pontos) {
+      const lista = document.getElementById('premios-list');
+
+      if (!premios.length) {
+        lista.innerHTML = `
+          <div class="empty">
+            <div class="icon">🎁</div>
+            <p>Nenhum prêmio cadastrado ainda.<br>Em breve teremos novidades!</p>
+          </div>`;
+        return;
+      }
+
+      // Ordena: disponíveis primeiro
+      const sorted = [...premios].sort((a, b) => {
+        const aDisp = pontos >= a.pontos_necessarios;
+        const bDisp = pontos >= b.pontos_necessarios;
+        if (aDisp && !bDisp) return -1;
+        if (!aDisp && bDisp) return 1;
+        return a.pontos_necessarios - b.pontos_necessarios;
+      });
+
+      lista.innerHTML = sorted.map(p => {
+        const disponivel = pontos >= p.pontos_necessarios;
+        const falta = p.pontos_necessarios - pontos;
+        return `
+          <div class="premio-card ${disponivel ? 'disponivel' : ''}">
+            <div class="premio-icon">${disponivel ? '🎁' : '🔒'}</div>
+            <div class="premio-info">
+              <div class="premio-nome">${escHtml(p.nome)}</div>
+              ${p.descricao ? `<div class="premio-desc">${escHtml(p.descricao)}</div>` : ''}
+              <div class="premio-pts ${disponivel ? '' : 'falta'}">
+                ⭐ ${disponivel
+                  ? `${p.pontos_necessarios.toLocaleString('pt-BR')} pontos`
+                  : `Faltam ${falta.toLocaleString('pt-BR')} pontos`}
+              </div>
+            </div>
+            ${disponivel
+              ? `<button class="resgatar-btn" onclick="abrirModal(${JSON.stringify(p).replace(/"/g, '&quot;')})">Resgatar</button>`
+              : `<div class="bloqueado-badge">${p.pontos_necessarios.toLocaleString('pt-BR')} pts</div>`
+            }
+          </div>`;
+      }).join('');
+    }
+
+    function renderHistorico(resgates) {
+      const lista = document.getElementById('historico-list');
+
+      if (!resgates.length) {
+        lista.innerHTML = `
+          <div class="empty">
+            <div class="icon">📋</div>
+            <p>Você ainda não resgatou nenhum prêmio.</p>
+          </div>`;
+        return;
+      }
+
+      lista.innerHTML = resgates.map(r => {
+        const item = (r.itens || [])[0];
+        const nome = item?.name || item?.nome || 'Resgate';
+        const status = r.status === 'finished' ? 'finalizado' : 'pendente';
+        const statusLabel = r.status === 'finished' ? 'Entregue' : 'Pendente';
+        return `
+          <div class="historico-item">
+            <div class="historico-icon">🎁</div>
+            <div class="historico-info">
+              <div class="historico-nome">${escHtml(nome)}</div>
+              <div class="historico-data">${formatData(r.created_at)}</div>
+            </div>
+            <div class="historico-status ${status}">${statusLabel}</div>
+          </div>`;
+      }).join('');
+    }
+
+    // ══════════════════════════════
+    // TABS
+    // ══════════════════════════════
+    function switchTab(tab) {
+      document.getElementById('tab-premios').classList.toggle('active', tab === 'premios');
+      document.getElementById('tab-historico').classList.toggle('active', tab === 'historico');
+      document.getElementById('painel-premios').classList.toggle('hidden', tab !== 'premios');
+      document.getElementById('painel-historico').classList.toggle('hidden', tab !== 'historico');
+    }
+
+    // ══════════════════════════════
+    // MODAL RESGATE
+    // ══════════════════════════════
+    function abrirModal(premio) {
+      premioSelecionado = premio;
+      document.getElementById('modal-nome').textContent = premio.nome;
+      document.getElementById('modal-pts').textContent  = `${premio.pontos_necessarios.toLocaleString('pt-BR')} pontos`;
+      document.getElementById('btn-confirmar').disabled = false;
+      document.getElementById('btn-confirmar').textContent = 'Resgatar agora';
+      document.getElementById('modal-resgate').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-resgate').classList.remove('open');
+      premioSelecionado = null;
+    }
+
+    function fecharModal(e) {
+      if (e.target === document.getElementById('modal-resgate')) closeModal();
+    }
+
+    async function confirmarResgate() {
+      if (!premioSelecionado || !tokenAtual) return;
+
+      const btn = document.getElementById('btn-confirmar');
+      btn.disabled = true;
+      btn.textContent = 'Processando...';
+
+      try {
+        const resp = await fetch(`${API_BASE}/api/v1/fidelidade/resgatar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: tokenAtual, premio_id: premioSelecionado.id })
+        });
+
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Erro ao resgatar');
+
+        closeModal();
+        showToast('✓ Resgate realizado! Aguarde a confirmação.');
+
+        // Recarrega dados
+        await reloadCliente();
+
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = 'Resgatar agora';
+        showToast('❌ ' + (e.message || 'Erro ao resgatar.'), true);
+      }
+    }
+
+    async function reloadCliente() {
+      try {
+        const resp = await fetch(`${API_BASE}/api/v1/fidelidade/cliente/${tokenAtual}`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        clienteData  = data.cliente;
+        premiosData  = data.premios || [];
+        renderApp(data);
+      } catch { /* silencioso */ }
+    }
+
+    // ══════════════════════════════
+    // UTILS
+    // ══════════════════════════════
+    function showApp() {
+      document.getElementById('loading-screen').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+    }
+
+    function showError(msg) {
+      document.getElementById('loading-screen').classList.add('hidden');
+      document.getElementById('error-msg').textContent = msg;
+      document.getElementById('error-screen').classList.remove('hidden');
+    }
+
+    function showToast(msg, isError = false) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.style.borderColor  = isError ? 'rgba(249,115,115,0.3)' : 'rgba(34,197,94,0.3)';
+      toast.style.color        = isError ? 'var(--primary)' : '#4ade80';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    function formatData(iso) {
+      if (!iso) return '—';
+      return new Date(iso).toLocaleDateString('pt-BR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    function escHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    init();
+  </script>
+</body>
+</html>
