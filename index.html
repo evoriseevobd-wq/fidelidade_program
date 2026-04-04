@@ -865,6 +865,12 @@
           document.documentElement.style.setProperty('--gold2', cfg.cor_secundaria + 'cc');
         }
 
+if (cfg.cor_fundo) {
+          document.documentElement.style.setProperty('--bg', cfg.cor_fundo);
+          document.documentElement.style.setProperty('--surface', cfg.cor_fundo + '22');
+          document.documentElement.style.setProperty('--surface2', cfg.cor_fundo + '44');
+        }
+        
       } catch { /* silencioso */ }
     }
 
