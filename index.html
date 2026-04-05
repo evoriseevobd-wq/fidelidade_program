@@ -1030,10 +1030,15 @@
         const data = await resp.json();
 
         clienteData = data.cliente;
-        premiosData = data.premios || [];
+premiosData = data.premios || [];
+console.log('🔍 restaurant_id recebido:', clienteData.restaurant_id);
 
         // Busca config visual do restaurante
-        await loadConfig(clienteData.restaurant_id || extractRestaurantId(data));
+        const rid = clienteData.restaurant_id
+          || clienteData.restaurant_id
+          || extractRestaurantId(data);
+console.log('🎨 Carregando config para restaurant_id:', rid);
+await loadConfig(rid);
 
         renderApp(data);
         showApp();
