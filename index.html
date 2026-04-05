@@ -832,10 +832,11 @@
         if (!resp.ok) return;
         const cfg = await resp.json();
 
-        // Nome e subtítulo
-        if (cfg.nome_exibicao) {
+       if (cfg.nome_exibicao) {
           document.getElementById('restaurant-name').textContent = cfg.nome_exibicao;
           document.title = cfg.nome_exibicao + ' — Fidelidade';
+        } else {
+          document.getElementById('restaurant-name').style.display = 'none';
         }
         if (cfg.subtitulo) {
           document.getElementById('restaurant-sub').textContent = cfg.subtitulo;
