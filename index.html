@@ -1095,6 +1095,23 @@ if (cfg.cor_fundo) {
           document.documentElement.style.setProperty('--surface', cfg.cor_fundo + '22');
           document.documentElement.style.setProperty('--surface2', cfg.cor_fundo + '44');
         }
+
+        const tema = cfg.tema || 'dark';
+if (tema === 'light') {
+  document.documentElement.style.setProperty('--text', '#111111');
+  document.documentElement.style.setProperty('--muted', '#555555');
+  document.documentElement.style.setProperty('--border', 'rgba(0,0,0,0.1)');
+  document.documentElement.style.setProperty('--border2', 'rgba(0,0,0,0.18)');
+  document.documentElement.style.setProperty('--surface', 'rgba(0,0,0,0.05)');
+  document.documentElement.style.setProperty('--surface2', 'rgba(0,0,0,0.09)');
+} else {
+  document.documentElement.style.setProperty('--text', '#fdf8f4');
+  document.documentElement.style.setProperty('--muted', '#a09080');
+  document.documentElement.style.setProperty('--border', 'rgba(255,255,255,0.08)');
+  document.documentElement.style.setProperty('--border2', 'rgba(255,255,255,0.14)');
+  document.documentElement.style.setProperty('--surface', '#1a1512');
+  document.documentElement.style.setProperty('--surface2', '#231e1a');
+}
         
       } catch { /* silencioso */ }
     }
