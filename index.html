@@ -1146,7 +1146,11 @@ if (cfg.cor_fundo) {
         const falta = p.pontos_necessarios - pontos;
         return `
           <div class="premio-card ${disponivel ? 'disponivel' : ''}">
-            <div class="premio-icon">${disponivel ? '🎁' : '🔒'}</div>
+            <div class="premio-icon">
+              ${p.foto_url 
+                ? `<img src="${escHtml(p.foto_url)}" alt="${escHtml(p.nome)}" />`
+                : disponivel ? '🎁' : '🔒'}
+            </div>
             <div class="premio-info">
               <div class="premio-nome">${escHtml(p.nome)}</div>
               ${p.descricao ? `<div class="premio-desc">${escHtml(p.descricao)}</div>` : ''}
