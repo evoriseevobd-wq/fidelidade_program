@@ -396,18 +396,189 @@
 
     .resgatar-btn {
       flex-shrink: 0;
-      padding: 10px 16px;
+      padding: 8px 12px;
       border-radius: var(--radius-sm);
       border: none;
       background: linear-gradient(135deg, var(--gold2), var(--gold));
       color: #1a1100;
       font-family: 'DM Sans', sans-serif;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 800;
       cursor: pointer;
       transition: all 0.2s ease;
       white-space: nowrap;
-      box-shadow: 0 4px 14px rgba(245,200,66,0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .resgatar-btn:hover { transform: translateY(-1px); }
+
+    .qty-btn {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0,0,0,0.2);
+      color: #1a1100;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .qty-num {
+      font-size: 14px;
+      font-weight: 800;
+      min-width: 16px;
+      text-align: center;
+    }
+
+    /* ── CARRINHO FLUTUANTE ── */
+    .carrinho-float {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      z-index: 150;
+      background: var(--primary);
+      border-radius: 999px;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      cursor: pointer;
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      white-space: nowrap;
+      min-width: 260px;
+      justify-content: space-between;
+    }
+
+    .carrinho-float.visible {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .carrinho-float-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .carrinho-float-qtd {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .carrinho-float-pts {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .carrinho-float-btn {
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── MODAL CARRINHO ── */
+    .carrinho-modal-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .carrinho-modal-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      background: var(--surface2);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+
+    .carrinho-modal-nome {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .carrinho-modal-pts {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .carrinho-modal-qty {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .carrinho-qty-btn {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--border2);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .carrinho-qty-num {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      min-width: 20px;
+      text-align: center;
+    }
+
+    .carrinho-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-top: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .carrinho-total-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .carrinho-total-pts {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--gold);
+    }
+
+    .carrinho-saldo {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .carrinho-saldo.insuficiente {
+      color: var(--primary);
     }
 
     .resgatar-btn:hover {
