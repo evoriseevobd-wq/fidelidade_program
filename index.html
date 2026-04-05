@@ -114,14 +114,20 @@
     }
 
     .logo-wrap {
-      width: 36px; height: 36px;
-      border-radius: 50%;
+      height: 40px;
+      width: auto;
+      border-radius: 8px;
       overflow: hidden;
       margin: 0;
-      border: 2px solid var(--border2);
       display: none;
-      background: var(--surface);
       flex-shrink: 0;
+    }
+
+    .logo-wrap img {
+      height: 40px;
+      width: auto;
+      object-fit: contain;
+      display: block;
     }
     
     .logo-wrap.visible { display: block; }
