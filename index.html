@@ -35,6 +35,7 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      padding-top: 64px;
       padding-bottom: 60px;
       overflow-x: hidden;
     }
@@ -98,38 +99,44 @@
 
     /* ── HEADER ── */
     .header {
-      padding: 40px 24px 32px;
+      padding: 16px 24px;
       text-align: center;
-      position: relative;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: #000;
+      z-index: 50;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      height: 64px;
     }
 
     .logo-wrap {
-      width: 80px; height: 80px;
+      width: 36px; height: 36px;
       border-radius: 50%;
       overflow: hidden;
-      margin: 0 auto 16px;
+      margin: 0;
       border: 2px solid var(--border2);
       display: none;
       background: var(--surface);
+      flex-shrink: 0;
     }
+    
     .logo-wrap.visible { display: block; }
     .logo-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-    .restaurant-name {
+  .restaurant-name {
       font-family: 'Playfair Display', serif;
-      font-size: 28px;
+      font-size: 18px;
       font-weight: 900;
       color: var(--text);
       letter-spacing: -0.02em;
       line-height: 1.1;
     }
 
-    .restaurant-sub {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 6px;
-      font-weight: 400;
-    }
+    .restaurant-sub { display: none; }
 
     /* ── PONTOS CARD ── */
     .pontos-card {
