@@ -1152,7 +1152,6 @@ if (cfg.cor_fundo) {
               ? `<button class="resgatar-btn" onclick="adicionarAoCarrinho(${JSON.stringify(p).replace(/"/g, '&quot;')})">+ Adicionar</button>`
               : `<div class="bloqueado-badge">${p.pontos_necessarios.toLocaleString('pt-BR')} pts</div>`
             }
-            }
           </div>`;
       }).join('');
     }
@@ -1302,11 +1301,43 @@ if (cfg.cor_fundo) {
       const isDelivery = tipoEntregaSelecionado2 === 'delivery';
       const endereco = document.getElementById('input-endereco2').value.trim();
 
-      if (isDelivery && !endereco) {
+     if (isDelivery && !endereco) {
         document.getElementById('input-endereco2').focus();
         document.getElementById('input-endereco2').style.borderColor = 'var(--primary)';
         return;
       }
+
+      const btn = document.getElementById('btn-finalizar');
+      btn.disabled = true;
+      btn.textContent = 'Processando...';
+
+      try {
+        const resp = await fetch(`${API_BASE}/api/v1/fidelidade/resgatar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: tokenAtual,
+            itens: itens.map(i => ({ premio_id: i.premio.id, quantidade: i.quantidade })),
+            service_type: isDelivery ? 'delivery' : 'local',
+            address: isDelivery ? endereco : null
+          })
+        });
+
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Erro ao resgatar');
+
+        carrinho = {};
+        atualizarCarrinho();
+        closeCarrinho();
+        showToast(isDelivery ? '✓ Pedido confirmado! Entrega a caminho.' : '✓ Pedido confirmado! Retire no balcão.');
+        await reloadCliente();
+
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = 'Finalizar pedido';
+        showToast('❌ ' + (e.message || 'Erro ao resgatar.'), true);
+      }
+    }
 
     function selecionarEntrega(tipo) {
       tipoEntregaSelecionado = tipo;
