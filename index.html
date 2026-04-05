@@ -1304,7 +1304,9 @@ if (cfg.cor_fundo) {
 
       if (isDelivery && !endereco) {
         document.getElementById('input-endereco2').focus();
-        document.getElementById('input-endereco2').style.borderColor = 'var
+        document.getElementById('input-endereco2').style.borderColor = 'var(--primary)';
+        return;
+      }
 
     function selecionarEntrega(tipo) {
       tipoEntregaSelecionado = tipo;
