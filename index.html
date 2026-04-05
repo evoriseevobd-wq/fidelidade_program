@@ -944,6 +944,53 @@
     </div>
   </div>
 
+<!-- CARRINHO FLUTUANTE -->
+  <div class="carrinho-float" id="carrinho-float" onclick="abrirCarrinho()">
+    <div class="carrinho-float-info">
+      <div class="carrinho-float-qtd" id="carrinho-float-qtd">0 itens</div>
+      <div class="carrinho-float-pts" id="carrinho-float-pts">0 pontos</div>
+    </div>
+    <div class="carrinho-float-btn">🛒 Ver carrinho →</div>
+  </div>
+
+  <!-- MODAL CARRINHO -->
+  <div class="modal-backdrop" id="modal-carrinho" onclick="fecharModalCarrinho(event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Seu carrinho</div>
+      <div class="modal-sub">Revise seus itens antes de finalizar</div>
+      <div class="carrinho-modal-list" id="carrinho-modal-list"></div>
+      <div class="carrinho-total">
+        <div class="carrinho-total-label">Total de pontos</div>
+        <div class="carrinho-total-pts" id="carrinho-total-pts">0 pts</div>
+      </div>
+      <div class="carrinho-saldo" id="carrinho-saldo"></div>
+
+      <!-- TIPO DE ENTREGA -->
+      <div class="entrega-opcoes">
+        <button class="entrega-btn selected" id="btn-retirada2" onclick="selecionarEntrega2('retirada')">
+          <span class="entrega-icon">🏪</span>
+          Retirar no local
+        </button>
+        <button class="entrega-btn" id="btn-delivery2" onclick="selecionarEntrega2('delivery')">
+          <span class="entrega-icon">🛵</span>
+          Delivery
+        </button>
+      </div>
+
+      <div class="campo-endereco" id="campo-endereco2">
+        <div class="campo-label">Endereço de entrega</div>
+        <input class="campo-input" id="input-endereco2" type="text"
+          placeholder="Rua, número, bairro, complemento..." />
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancelar" onclick="closeCarrinho()">Cancelar</button>
+        <button class="btn-confirmar" id="btn-finalizar" onclick="finalizarCarrinho()">Finalizar pedido</button>
+      </div>
+    </div>
+  </div>
+  
   <!-- TOAST -->
   <div class="toast" id="toast">✓ Resgate realizado!</div>
 
@@ -1102,8 +1149,9 @@ if (cfg.cor_fundo) {
               </div>
             </div>
             ${disponivel
-              ? `<button class="resgatar-btn" onclick="abrirModal(${JSON.stringify(p).replace(/"/g, '&quot;')})">Resgatar</button>`
+              ? `<button class="resgatar-btn" onclick="adicionarAoCarrinho(${JSON.stringify(p).replace(/"/g, '&quot;')})">+ Adicionar</button>`
               : `<div class="bloqueado-badge">${p.pontos_necessarios.toLocaleString('pt-BR')} pts</div>`
+            }
             }
           </div>`;
       }).join('');
@@ -1152,6 +1200,111 @@ if (cfg.cor_fundo) {
     // MODAL RESGATE
     // ══════════════════════════════
     let tipoEntregaSelecionado = 'retirada';
+    let tipoEntregaSelecionado2 = 'retirada';
+    let carrinho = {}; // { premio_id: { premio, quantidade } }
+
+    function atualizarCarrinho() {
+      const itens = Object.values(carrinho);
+      const totalQtd = itens.reduce((s, i) => s + i.quantidade, 0);
+      const totalPts = itens.reduce((s, i) => s + (i.premio.pontos_necessarios * i.quantidade), 0);
+
+      const float = document.getElementById('carrinho-float');
+      document.getElementById('carrinho-float-qtd').textContent = `${totalQtd} ${totalQtd === 1 ? 'item' : 'itens'}`;
+      document.getElementById('carrinho-float-pts').textContent = `${totalPts.toLocaleString('pt-BR')} pontos`;
+
+      if (totalQtd > 0) {
+        float.classList.add('visible');
+      } else {
+        float.classList.remove('visible');
+      }
+    }
+
+    function adicionarAoCarrinho(premio) {
+      const pontos = clienteData?.pontos || 0;
+      const totalAtual = Object.values(carrinho).reduce((s, i) => s + (i.premio.pontos_necessarios * i.quantidade), 0);
+      if (totalAtual + premio.pontos_necessarios > pontos) {
+        showToast('❌ Pontos insuficientes!', true);
+        return;
+      }
+      if (carrinho[premio.id]) {
+        carrinho[premio.id].quantidade++;
+      } else {
+        carrinho[premio.id] = { premio, quantidade: 1 };
+      }
+      atualizarCarrinho();
+    }
+
+    function removerDoCarrinho(premioId) {
+      if (!carrinho[premioId]) return;
+      carrinho[premioId].quantidade--;
+      if (carrinho[premioId].quantidade <= 0) delete carrinho[premioId];
+      atualizarCarrinho();
+      renderCarrinhoModal();
+    }
+
+    function abrirCarrinho() {
+      renderCarrinhoModal();
+      document.getElementById('modal-carrinho').classList.add('open');
+    }
+
+    function closeCarrinho() {
+      document.getElementById('modal-carrinho').classList.remove('open');
+    }
+
+    function fecharModalCarrinho(e) {
+      if (e.target === document.getElementById('modal-carrinho')) closeCarrinho();
+    }
+
+    function renderCarrinhoModal() {
+      const itens = Object.values(carrinho);
+      const totalPts = itens.reduce((s, i) => s + (i.premio.pontos_necessarios * i.quantidade), 0);
+      const pontos = clienteData?.pontos || 0;
+      const saldo = pontos - totalPts;
+
+      document.getElementById('carrinho-total-pts').textContent = `${totalPts.toLocaleString('pt-BR')} pts`;
+
+      const saldoEl = document.getElementById('carrinho-saldo');
+      saldoEl.textContent = `Saldo após resgate: ${saldo.toLocaleString('pt-BR')} pts`;
+      saldoEl.className = 'carrinho-saldo' + (saldo < 0 ? ' insuficiente' : '');
+
+      document.getElementById('btn-finalizar').disabled = saldo < 0 || itens.length === 0;
+
+      const lista = document.getElementById('carrinho-modal-list');
+      lista.innerHTML = itens.map(i => `
+        <div class="carrinho-modal-item">
+          <div>
+            <div class="carrinho-modal-nome">${escHtml(i.premio.nome)}</div>
+            <div class="carrinho-modal-pts">${(i.premio.pontos_necessarios * i.quantidade).toLocaleString('pt-BR')} pts</div>
+          </div>
+          <div class="carrinho-modal-qty">
+            <button class="carrinho-qty-btn" onclick="removerDoCarrinho('${i.premio.id}')">−</button>
+            <div class="carrinho-qty-num">${i.quantidade}</div>
+            <button class="carrinho-qty-btn" onclick="adicionarAoCarrinho(${JSON.stringify(i.premio).replace(/"/g, '&quot;')})">+</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function selecionarEntrega2(tipo) {
+      tipoEntregaSelecionado2 = tipo;
+      document.getElementById('btn-retirada2').classList.toggle('selected', tipo === 'retirada');
+      document.getElementById('btn-delivery2').classList.toggle('selected', tipo === 'delivery');
+      document.getElementById('campo-endereco2').classList.toggle('visible', tipo === 'delivery');
+      if (tipo === 'retirada') {
+        document.getElementById('input-endereco2').value = '';
+      }
+    }
+
+    async function finalizarCarrinho() {
+      const itens = Object.values(carrinho);
+      if (itens.length === 0) return;
+
+      const isDelivery = tipoEntregaSelecionado2 === 'delivery';
+      const endereco = document.getElementById('input-endereco2').value.trim();
+
+      if (isDelivery && !endereco) {
+        document.getElementById('input-endereco2').focus();
+        document.getElementById('input-endereco2').style.borderColor = 'var
 
     function selecionarEntrega(tipo) {
       tipoEntregaSelecionado = tipo;
