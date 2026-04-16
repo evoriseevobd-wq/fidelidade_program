@@ -1203,7 +1203,6 @@ if (tema === 'light') {
         const nome = item?.name || item?.nome || 'Resgate';
         const status = r.status === 'finished' ? 'finalizado' : 'pendente';
         const statusLabel = r.status === 'finished' ? 'Entregue' : 'Pedido feito';
-        return `
           const itensResumo = (r.itens || []).map(i => `${i.qty || i.quantidade || 1}x ${i.name || i.nome}`).join(', ');
         return `
           <div class="historico-item" onclick="toggleResumo('resumo-${r.id}')" style="cursor:pointer; flex-direction:column; align-items:stretch; gap:8px;">
