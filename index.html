@@ -1306,9 +1306,9 @@ if (tema === 'light') {
             <div class="carrinho-modal-pts">${(i.premio.pontos_necessarios * i.quantidade).toLocaleString('pt-BR')} pts</div>
           </div>
           <div class="carrinho-modal-qty">
-            <button class="carrinho-qty-btn" onclick="removerDoCarrinho('${i.premio.id}')">−</button>
+            <button class="carrinho-qty-btn" onclick="removerDoCarrinho('${i.premio.id}'); renderCarrinhoModal();">−</button>
             <div class="carrinho-qty-num">${i.quantidade}</div>
-            <button class="carrinho-qty-btn" onclick="adicionarAoCarrinho(${JSON.stringify(i.premio).replace(/"/g, '&quot;')})">+</button>
+            <button class="carrinho-qty-btn" onclick="adicionarAoCarrinho(${JSON.stringify(i.premio).replace(/"/g, '&quot;')}); renderCarrinhoModal();">+</button>
           </div>
         </div>
       `).join('');
