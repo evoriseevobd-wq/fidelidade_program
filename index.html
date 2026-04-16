@@ -1094,10 +1094,8 @@ await loadConfig(rid);
         }
 
 if (cfg.cor_fundo) {
-          document.documentElement.style.setProperty('--bg', cfg.cor_fundo);
-          document.documentElement.style.setProperty('--surface', cfg.cor_fundo + '22');
-          document.documentElement.style.setProperty('--surface2', cfg.cor_fundo + '44');
-        }
+  document.documentElement.style.setProperty('--bg', cfg.cor_fundo);
+}
 
         const tema = cfg.tema || 'dark';
 if (tema === 'light') {
