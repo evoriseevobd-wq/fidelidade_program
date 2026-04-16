@@ -1204,17 +1204,29 @@ if (tema === 'light') {
         const status = r.status === 'finished' ? 'finalizado' : 'pendente';
         const statusLabel = r.status === 'finished' ? 'Entregue' : 'Pedido feito';
         return `
-          <div class="historico-item">
-            <div class="historico-icon">🎁</div>
-            <div class="historico-info">
-              <div class="historico-nome">${escHtml(nome)}</div>
-              <div class="historico-data">${formatData(r.created_at)}</div>
+          const itensResumo = (r.itens || []).map(i => `${i.qty || i.quantidade || 1}x ${i.name || i.nome}`).join(', ');
+        return `
+          <div class="historico-item" onclick="toggleResumo('resumo-${r.id}')" style="cursor:pointer; flex-direction:column; align-items:stretch; gap:8px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div class="historico-icon">🎁</div>
+              <div class="historico-info">
+                <div class="historico-nome">${escHtml(nome)}</div>
+                <div class="historico-data">${formatData(r.created_at)}</div>
+              </div>
+              <div class="historico-status ${status}">${statusLabel}</div>
             </div>
-            <div class="historico-status ${status}">${statusLabel}</div>
+            <div id="resumo-${r.id}" style="display:none; padding:10px 12px; background:var(--surface2); border-radius:10px; font-size:12px; color:var(--muted); line-height:1.6;">
+              ${itensResumo}
+            </div>
           </div>`;
       }).join('');
     }
 
+function toggleResumo(id) {
+      const el = document.getElementById(id);
+      if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+    
     // ══════════════════════════════
     // TABS
     // ══════════════════════════════
