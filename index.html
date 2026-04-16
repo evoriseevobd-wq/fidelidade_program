@@ -881,6 +881,7 @@
 
     <!-- PONTOS -->
     <div class="pontos-card fade-up fade-up-2" id="pontos-card">
+      <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; color:var(--primary); margin-bottom:20px;">Programa de Fidelidade ⭐</div>
       <div class="pontos-label">Seus pontos</div>
       <div>
         <span class="pontos-value" id="pontos-value">0</span>
@@ -1064,11 +1065,9 @@ await loadConfig(rid);
         const cfg = await resp.json();
 
        if (cfg.nome_exibicao) {
-          document.getElementById('restaurant-name').textContent = cfg.nome_exibicao;
           document.title = cfg.nome_exibicao + ' — Fidelidade';
-        } else {
-          document.getElementById('restaurant-name').style.display = 'none';
         }
+        document.getElementById('restaurant-name').style.display = 'none';
         if (cfg.subtitulo) {
           document.getElementById('restaurant-sub').textContent = cfg.subtitulo;
         }
