@@ -1202,7 +1202,7 @@ if (tema === 'light') {
         const item = (r.itens || [])[0];
         const nome = item?.name || item?.nome || 'Resgate';
         const status = r.status === 'finished' ? 'finalizado' : 'pendente';
-        const statusLabel = r.status === 'finished' ? 'Entregue' : 'Pendente';
+        const statusLabel = r.status === 'finished' ? 'Entregue' : 'Pedido feito';
         return `
           <div class="historico-item">
             <div class="historico-icon">🎁</div>
@@ -1480,10 +1480,10 @@ if (tema === 'light') {
 
     function formatData(iso) {
       if (!iso) return '—';
-      return new Date(iso).toLocaleDateString('pt-BR', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      });
+      const d = new Date(iso);
+      const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const data = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      return `${hora} · ${data}`;
     }
 
     function escHtml(str) {
